@@ -1,0 +1,1 @@
+SELECT * FROM booking JOIN numbers ON booking.room_number = numbers.room_number;

@@ -1,0 +1,1 @@
+SELECT * FROM booking CROSS JOIN numbers;

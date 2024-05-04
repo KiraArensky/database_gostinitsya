@@ -1,0 +1,1 @@
+SELECT COUNT(*) FROM numbers WHERE price > 1001

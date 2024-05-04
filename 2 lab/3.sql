@@ -1,0 +1,1 @@
+SELECT price FROM numbers where type = 1;
