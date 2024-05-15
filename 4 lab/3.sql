@@ -1,11 +1,11 @@
 CREATE OR REPLACE VIEW AvailableRooms AS
 SELECT room_number, type, price
 FROM numbers
-WHERE room_number IN (SELECT booking.room_number from booking where booking.check_out_date > CURRENT_DATE);
+WHERE room_number IN (SELECT booking.room_number from booking where booking.check_out_date < '2024-05-01'::date);
 
 CREATE OR REPLACE FUNCTION prevent_insert_update_on_view() RETURNS TRIGGER AS $$
 BEGIN
-  IF NEW.room_number IN (SELECT booking.room_number from booking where booking.check_out_date < CURRENT_DATE) THEN
+  IF NEW.room_number IN (SELECT booking.room_number from booking where booking.check_out_date < '2024-05-01'::date) OR NEW.room_number IN (SELECT numbers.room_number from numbers) THEN
     RAISE EXCEPTION 'Номер должен быть свободен';
   END IF;
   RETURN NEW;

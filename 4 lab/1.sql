@@ -24,6 +24,6 @@ JOIN numbers ON booking.room_number = numbers.room_number;
 CREATE VIEW AvailableRooms AS
 SELECT room_number, type, price
 FROM numbers
-WHERE room_number IN (SELECT booking.room_number from booking where booking.check_out_date > CURRENT_DATE);
+WHERE room_number NOT IN (SELECT booking.room_number from booking where (booking.check_out_date < '2024-05-01'::date));
 
 
