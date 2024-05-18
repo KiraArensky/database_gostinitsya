@@ -22,7 +22,7 @@ CREATE OR REPLACE PROCEDURE insert_and_update_booking(
     p_check_in_date date,
     p_check_out_date date
 )
-     LANGUAGE 'plpgsql'
+    LANGUAGE 'plpgsql'
 AS
 $$
 BEGIN
@@ -79,11 +79,16 @@ SELECT count_userinbooking();
 --8
 
 --вставка
-CREATE OR REPLACE FUNCTION trigger_insert()
+CREATE OR REPLACE FUNCTION trigger_insert_update()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    NEW.booking_date = CURRENT_DATE;
+    IF NEW.check_in_date > (SELECT booking.check_out_date from booking where booking.room_number = NEW.room_number) AND
+       NEW.check_out_date > NEW.check_in_date THEN
+        NEW.booking_date = CURRENT_DATE;
+    ELSE
+        RAISE EXCEPTION 'Номер должен быть свободен';
+    END IF;
     RETURN NEW;
 END;
 $$ LANGUAGE 'plpgsql';
@@ -92,27 +97,19 @@ CREATE TRIGGER booking_date_trigger
     BEFORE INSERT
     ON booking
     FOR EACH ROW
-EXECUTE FUNCTION trigger_insert();
+EXECUTE FUNCTION trigger_insert_update();
 
 
-INSERT INTO booking (client_id, room_number, check_out_date)
-VALUES (1, 101, '2024-05-20');
+INSERT INTO booking (client_id, room_number, check_in_date, check_out_date)
+VALUES (1, 101, '2024-05-14'::date, '2024-05-20'::date);
 
 --обновление
-CREATE OR REPLACE FUNCTION trigger_update()
-    RETURNS TRIGGER AS
-$$
-BEGIN
-    NEW.booking_date = CURRENT_DATE + INTERVAL '1 day';
-    RETURN NEW;
-END;
-$$ LANGUAGE 'plpgsql';
 
 CREATE TRIGGER booking_date_update_trigger
     BEFORE UPDATE
     ON booking
     FOR EACH ROW
-EXECUTE FUNCTION trigger_update();
+EXECUTE FUNCTION trigger_insert_update();
 
 
 UPDATE booking
@@ -124,7 +121,7 @@ CREATE OR REPLACE FUNCTION trigger_delete()
     RETURNS TRIGGER AS
 $$
 BEGIN
-    RAISE NOTICE  'Запись % удалена', OLD.booking_id;
+    RAISE NOTICE 'Запись % удалена', OLD.booking_id;
     RETURN OLD;
 END;
 $$ LANGUAGE 'plpgsql';
